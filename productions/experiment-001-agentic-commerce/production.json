@@ -1,0 +1,33 @@
+{
+  "id": "experiment-001-agentic-commerce",
+  "title": "Can AI Spend Your Money Without You Knowing?",
+  "voice": "en-US-AndrewNeural",
+  "voice_rate": "+2%",
+  "initial_cold_generation_seconds": 73.107,
+  "scenes": [
+    {"name": "The question", "weight": 0.11, "eyebrow": "THE CHECKOUT QUESTION", "headline": "CAN AI SPEND\nYOUR MONEY?", "visual": "hero"},
+    {"name": "The request", "weight": 0.13, "eyebrow": "YOUR INSTRUCTION", "headline": "A LAPTOP\nUNDER $1,000", "visual": "request"},
+    {"name": "Selection", "weight": 0.14, "eyebrow": "AI CAN COMPARE", "headline": "SEARCH • SCORE\nSHORTLIST", "visual": "compare"},
+    {"name": "Checkout boundary", "weight": 0.12, "eyebrow": "BUT SELECTION ≠ PAYMENT", "headline": "CHECKOUT\nPAUSES HERE", "visual": "checkout"},
+    {"name": "User controls", "weight": 0.17, "eyebrow": "YOU SET THE BOUNDS", "headline": "BUDGET • MERCHANT\nQUANTITY • TIME", "visual": "controls"},
+    {"name": "Secure flow", "weight": 0.17, "eyebrow": "A CONTROLLED PAYMENT FLOW", "headline": "AUTHENTICATE\nTOKENIZE • VERIFY", "visual": "flow"},
+    {"name": "Emerging future", "weight": 0.09, "eyebrow": "AGENTIC COMMERCE", "headline": "EMERGING\nNOT UNIVERSAL", "visual": "future"},
+    {"name": "Viewer question", "weight": 0.07, "eyebrow": "YOUR CALL", "headline": "ONE-TIME BUDGET\nOR NO CHECKOUT?", "visual": "question"}
+  ],
+  "publishing": {
+    "youtube": {
+      "title": "Can AI Spend Your Money Without You Knowing?",
+      "description": "AI shopping agents may be able to compare products—and emerging payment systems aim to let approved agents complete purchases within limits you authorize. Here’s the important difference between choosing a product and actually paying for it.\n\nThis explainer is based on public Mastercard Agent Pay and Visa Intelligent Commerce materials. Capabilities vary by provider, market, issuer, and implementation. No security control is infallible.",
+      "hashtags": ["#AgenticAI", "#DigitalPayments", "#AISafety", "#TechExplained"]
+    },
+    "facebook": {
+      "title": "Could an AI shop—and pay—for you?",
+      "description": "AI can already help compare products. Emerging agentic-payment systems go further, but the payment step is designed around authorization, agent identity, tokenized credentials, and spending controls. Would you trust an AI with a one-time budget?",
+      "hashtags": ["#ArtificialIntelligence", "#DigitalPayments", "#Technology"]
+    },
+    "tiktok": {
+      "caption": "AI choosing a laptop is one thing. AI reaching checkout is another. Emerging payment systems are being designed around your instructions, authentication, and spending limits—but would you trust one?",
+      "hashtags": ["#AITok", "#TechTok", "#AgenticAI", "#DigitalPayments"]
+    }
+  }
+}

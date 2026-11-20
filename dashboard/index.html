@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="TrendClip Studio local video workflow">
+    <title>TrendClip Studio</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" aria-label="TrendClip Studio home">
+          <span class="brand-mark">T</span>
+          <span><strong>TrendClip</strong><small>STUDIO</small></span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a class="nav-item active" href="#today"><span>Overview</span><b>⌂</b></a>
+          <a class="nav-item" href="#stories"><span>Discover</span><b id="nav-story-count">0</b></a>
+          <a class="nav-item" href="#create"><span>Create / Remix</span><b>+</b></a>
+          <a class="nav-item" href="#review"><span>Exports</span><b id="nav-export-count">0</b></a>
+          <a class="nav-item" href="#activity"><span>Processing</span><b id="nav-activity-count">0</b></a>
+          <a class="nav-item" href="#settings"><span>Settings</span><b>⚙</b></a>
+        </nav>
+        <div class="mode-card">
+          <span class="mode-dot"></span>
+          <div><strong>Safe mode</strong><small>Manual publishing only</small></div>
+        </div>
+        <div class="session-setting">
+          <label for="browser-session-toggle">
+            <span><strong>Chrome YouTube session</strong><small>Use your signed-in session for restricted videos</small></span>
+            <input id="browser-session-toggle" type="checkbox" role="switch">
+          </label>
+          <p>Cookie values are read by the local downloader only and are never saved or logged.</p>
+        </div>
+        <div class="sidebar-note">
+          <strong>Current capability</strong>
+          <p>Finds promising moments in selected GTA 6 videos and creates local vertical clip drafts.</p>
+          <span>Nothing is uploaded automatically.</span>
+        </div>
+      </aside>
+
+      <main id="today">
+        <header class="page-header">
+          <div>
+            <p class="breadcrumb">CREATOR STUDIO / OVERVIEW</p>
+            <h1>Turn trending GTA 6 videos into review-ready shorts</h1>
+            <p>Discover current videos, find explainable highlights, create local clip drafts, and download the versions you want to publish.</p>
+          </div>
+          <div class="header-actions">
+            <label for="topic-select">Focus</label>
+            <select id="topic-select"></select>
+            <button id="refresh-button" class="button secondary">Refresh stories</button>
+          </div>
+        </header>
+
+        <section class="workflow" aria-label="Video workflow">
+          <div class="workflow-step current" id="step-story"><span>1</span><div><strong>Choose source</strong><small>Select a discovered video</small></div></div>
+          <div class="workflow-line"></div>
+          <div class="workflow-step" id="step-analyze"><span>2</span><div><strong>Find moments</strong><small>Download, transcribe, and score</small></div></div>
+          <div class="workflow-line"></div>
+          <div class="workflow-step" id="step-create"><span>3</span><div><strong>Create clip</strong><small>Reframe, caption, and normalize</small></div></div>
+          <div class="workflow-line"></div>
+          <div class="workflow-step" id="step-review"><span>4</span><div><strong>Review & export</strong><small>Watch, validate, then upload</small></div></div>
+        </section>
+
+        <div class="status-banner" id="status-banner">
+          <span class="status-icon">i</span>
+          <div><strong>Discovery uses current, observable YouTube data—not a made-up trend score.</strong><p>GTA 6 results are ordered by observed views per hour, freshness, and configured duration limits.</p></div>
+        </div>
+
+        <section class="content-grid">
+          <div class="panel stories-panel" id="stories">
+            <div class="panel-header">
+              <div><span class="section-label">DISCOVERED VIDEOS</span><h2>Pick a source to analyze</h2></div>
+              <span class="updated" id="last-updated">Not refreshed</span>
+            </div>
+            <label class="search-field" for="query-input">Refine the GTA 6 search <span>Optional</span><input id="query-input" maxlength="160" placeholder="Example: funny gameplay reactions"></label>
+            <div id="story-list" class="story-list" aria-live="polite"></div>
+          </div>
+
+          <div class="right-column">
+            <section class="panel create-panel" id="create">
+              <span class="section-label">SELECTED SOURCE</span>
+              <div id="selection-empty" class="selection-empty">Choose a video on the left to continue.</div>
+              <div id="selection-content" hidden>
+                <div class="verified"><span>✓</span> Discovered source</div>
+                <h2 id="selected-title"></h2>
+                <p id="selected-source"></p>
+                <a id="selected-link" target="_blank" rel="noopener noreferrer">Open source evidence</a>
+                <div class="output-plan">
+                  <span>Output</span>
+                  <strong>15–30 sec vertical source clip</strong>
+                  <small>Word captions · blurred vertical layout · −14 LUFS audio</small>
+                </div>
+                <div class="source-use-notice">
+                  <strong>Third-party source</strong>
+                  <p>TrendClip will create a local remix draft for your review. It does not claim that you own the source or that reuse is automatically permitted.</p>
+                </div>
+                <button id="analyze-button" class="button primary wide">Download and find the best moments</button>
+                <p id="analysis-progress" class="progress-note" role="status" aria-live="polite"></p>
+                <div id="moment-section" class="moment-section" hidden>
+                  <div class="subsection-heading"><span class="section-label">READY DRAFTS</span><strong>Best story is selected automatically</strong></div>
+                  <div id="semantic-note" class="semantic-note" hidden></div>
+                  <div id="moment-list" class="moment-list"></div>
+                  <label class="field" for="hook-input"><span>Opening hook</span><input id="hook-input" maxlength="100" placeholder="Why should someone keep watching?"></label>
+                  <fieldset class="destination-picker">
+                    <legend>Prepare publishing metadata for</legend>
+                    <label><input type="checkbox" name="destination" value="youtube" checked> YouTube Shorts</label>
+                    <label><input type="checkbox" name="destination" value="facebook" checked> Facebook Reels</label>
+                    <label><input type="checkbox" name="destination" value="tiktok" checked> TikTok</label>
+                  </fieldset>
+                  <button id="render-source-button" class="button primary wide">Create recommended draft</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel review-panel" id="review">
+              <div class="panel-header compact"><div><span class="section-label">LATEST EXPORT</span><h2>Review before upload</h2></div><span id="validation-chip" class="chip">No export</span></div>
+              <div id="export-empty" class="export-empty">Your generated video will appear here.</div>
+              <div id="export-content" hidden>
+                <video id="video-preview" controls preload="metadata"></video>
+                <h3 id="export-title"></h3>
+                <div class="export-details"><span id="export-date"></span><span id="export-duration"></span></div>
+                <div id="variation-list" class="variation-list" aria-label="Saved draft variations"></div>
+                <div class="review-actions">
+                  <a id="download-link" class="button secondary" download>Download video</a>
+                  <button id="show-upload-button" class="button primary">Ready to upload manually</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="panel activity-panel" id="activity">
+          <div class="panel-header compact"><div><span class="section-label">PROCESSING</span><h2>Recent local jobs</h2></div><p>Use these details to trace failures without reading the terminal.</p></div>
+          <div id="jobs-list" class="jobs-list"></div>
+        </section>
+
+        <section class="panel activity-panel" id="settings">
+          <div class="panel-header compact"><div><span class="section-label">SETTINGS</span><h2>Local integrations</h2></div></div>
+          <div class="settings-grid"><div><strong>Chrome YouTube session</strong><p>Off by default. Use the switch in the sidebar only when YouTube requires your existing signed-in session.</p></div><div><label class="settings-toggle" for="codex-toggle"><span><strong>Codex assistance</strong><small>Optional semantic ranking and metadata</small></span><input id="codex-toggle" type="checkbox" role="switch"></label><p id="codex-status">Disabled. Deterministic processing remains the default.</p><small>May consume your ChatGPT/Codex plan allowance. Never required for download, transcription, scoring, rendering, or validation.</small><button id="test-codex-button" class="button secondary compact-button" disabled>Test Codex safely</button><p id="codex-test-result" class="integration-result" hidden></p></div><div><strong>Publishing</strong><p>Manual only. No platform credentials, uploads, or schedules are enabled.</p></div></div>
+        </section>
+
+        <footer><span>TrendClip Studio v0.5.0</span><span>Local first · Manual publishing only</span></footer>
+        <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      </main>
+    </div>
+  </body>
+</html>
+

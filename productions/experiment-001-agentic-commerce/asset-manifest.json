@@ -1,0 +1,28 @@
+{
+  "assets": [
+    {
+      "file": "assets/agentic-commerce-hero.png",
+      "type": "original generated illustration",
+      "tool": "built-in image generation",
+      "generated_on": "2026-11-20",
+      "prompt_summary": "Premium vertical 3D editorial illustration of a friendly abstract AI shopping agent, laptop product comparison, tokenized payment object, protective approval gate, and human biometric confirmation; midnight navy, cyan, coral, and emerald palette; no logos, text, personal data, watermark, or copyrighted characters."
+    },
+    {
+      "file": "runtime OpenCV graphics",
+      "type": "original programmatic motion graphics",
+      "tool": "TrendClip Studio OpenCV renderer",
+      "generated_on": "2026-11-20",
+      "prompt_summary": "Eight custom scenes composed from geometric primitives, typography, particles, controls, flow diagrams, and animated transitions."
+    },
+    {
+      "file": "output/narration.mp3",
+      "type": "original synthesized narration",
+      "tool": "Edge TTS en-US-AndrewNeural",
+      "generated_on": "2026-11-20",
+      "prompt_summary": "Narration of the reviewed original script."
+    }
+  ],
+  "third_party_footage": false,
+  "stock_media": false,
+  "paid_provider_api": false
+}

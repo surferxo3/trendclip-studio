@@ -1,0 +1,13 @@
+Can AI spend your money without you knowing? Not quite—but the checkout button is getting closer.
+
+Imagine asking an AI: find me the best laptop under one thousand dollars. It can search, compare specifications, check sellers, and narrow the choices.
+
+But selecting is not the same as paying. At checkout, emerging systems from Visa and Mastercard are designed around consumer-approved instructions, tokenized payment credentials, and registered or validated agents.
+
+You can set the product, merchant, price ceiling, quantity, and time window. Depending on the flow, you may still confirm the purchase and authenticate with a passkey, biometrics, or another approved method.
+
+The payment network and issuer can then evaluate the request against those controls and existing fraud checks.
+
+These systems are emerging. Not every assistant can buy things, and no safeguard is perfect.
+
+So, would you trust an AI with a one-time budget—or never let it reach checkout?

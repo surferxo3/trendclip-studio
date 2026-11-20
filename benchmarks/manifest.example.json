@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "description": "Replace these synthetic results with adjudicated reviews of locally authorized evaluation media.",
+  "platforms": {
+    "windows": false,
+    "macos": false,
+    "linux": false
+  },
+  "samples": [
+    {
+      "id": "synthetic-example-only",
+      "reviewer_count": 2,
+      "metrics": {
+        "top_three_useful": true,
+        "narrative_complete": true,
+        "boundary_caption_accurate": true,
+        "visual_framing_good": true,
+        "technical_reliable": true,
+        "first_time_usable": true,
+        "explainability_good": true
+      },
+      "critical_failures": []
+    }
+  ]
+}

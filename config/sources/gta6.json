@@ -1,0 +1,14 @@
+{
+  "topic": "gta6",
+  "allowed_hosts": ["www.youtube.com"],
+  "sources": [
+    {
+      "name": "Rockstar Games — Official YouTube",
+      "type": "atom",
+      "url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC6VcWc1rAoWdBCM0JxrRQ3A",
+      "reliability": 1.0,
+      "enabled": true
+    }
+  ]
+}
+
