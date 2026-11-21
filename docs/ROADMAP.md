@@ -17,3 +17,16 @@
 
 “Complete” reflects repository implementation and recorded local verification, not guaranteed acceptance by any social platform.
 
+## Next priorities
+
+1. Run the authorized two-reviewer creator benchmark and preserve its evidence manifest.
+2. Complete real-hardware Windows and Linux media-pipeline smoke tests and publish a packaged release.
+3. Add preview trimming, transcript-synchronized start/end controls, and optional multi-moment montage assembly.
+4. Add facecam/gameplay-aware crop guidance without making an LLM mandatory.
+5. Add user-controlled cache retention and safe post-reboot job resumption.
+6. Improve destination-metadata editing and thumbnail review.
+7. Evaluate live-stream discovery, segmented capture, and chat/replay-spike scoring only after the recorded-video workflow meets its benchmark.
+8. Consider translation, additional discovery adapters, and provider-neutral optional semantic analyzers when each has measured value.
+
+Automatic publishing, scheduling, analytics synchronization, and performance-learning loops remain deferred. They require a separate rights, credential, privacy, and platform-policy design rather than an incremental switch in the current local application.
+

@@ -250,7 +250,7 @@ Read [Security](docs/SECURITY.md) for the complete threat boundary.
 
 ## Automation boundary
 
-The Studio can discover and rank recent YouTube candidates, ingest a selected source as a local review job, transcribe it, combine replay/audio/speech/motion evidence, recommend three editorial drafts, render three visibly different vertical styles, preserve generated variations, validate content and structure, and preview/download the export. The six-job Windows/macOS/Linux hosted CI matrix passes; real-hardware Windows/Linux release smoke tests, authorized human benchmark media, and facecam-aware subject tracking remain release-quality gaps. Automatic posting, scheduling, and analytics are deliberately out of scope. See [Product Scope](docs/PRODUCT-SCOPE.md), [Quality Benchmark](docs/QUALITY-BENCHMARK.md), and [Reference Capability Gap](docs/REFERENCE-GAP.md).
+The Studio can discover and rank recent YouTube candidates, ingest a selected source as a local review job, transcribe it, combine replay/audio/speech/motion evidence, recommend three editorial drafts, render three visibly different vertical styles, preserve generated variations, validate content and structure, and preview/download the export. The six-job Windows/macOS/Linux hosted CI matrix passes; real-hardware Windows/Linux release smoke tests, authorized human benchmark media, and facecam-aware subject tracking remain release-quality gaps. Automatic posting, scheduling, and analytics are deliberately out of scope. See [Product Scope](docs/PRODUCT-SCOPE.md), [Quality Benchmark](docs/QUALITY-BENCHMARK.md), and [Roadmap](docs/ROADMAP.md).
 
 Run the evidence-based quality score after completing a local benchmark manifest:
 
@@ -285,7 +285,7 @@ The implementation avoids shell-built FFmpeg strings and uses `pathlib`, Python 
 | `trendclip.codex_adapter` | Optional bounded schema-validated semantic assistance. |
 | `trendclip.benchmark` | Human-review scorecard and critical release gates. |
 
-See [Architecture](docs/ARCHITECTURE.md) and [Product Architecture](docs/PRODUCT-ARCHITECTURE.md) for diagrams and detailed data flow.
+See [Architecture](docs/ARCHITECTURE.md) for diagrams, runtime modes, storage, model boundaries, and detailed data flow.
 
 ## Testing and the 10/10 target
 
@@ -321,7 +321,7 @@ Its review package is written under `productions/experiment-001-agentic-commerce
 
 ## Add another topic
 
-Copy `config/topics/gta6.json`, change its slug/content/sources, and retain the validated schema. The shared renderer reads all scene text, timing, colors, source references, and posting metadata from configuration. See [Architecture](docs/ARCHITECTURE.md), [Extending TrendClip](docs/EXTENSIONS.md), and the [video feature specification](docs/features/original-video-renderer.md).
+Copy `config/topics/gta6.json`, change its slug/content/sources, and retain the validated schema. The shared renderer reads all scene text, timing, colors, source references, and posting metadata from configuration. See [Architecture](docs/ARCHITECTURE.md) and [Extending TrendClip](docs/EXTENSIONS.md).
 
 ## Extending TrendClip
 

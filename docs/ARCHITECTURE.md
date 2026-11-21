@@ -4,6 +4,13 @@
 
 TrendClip Studio v0.5 implements configuration-driven discovery, selected-source YouTube ingestion, local transcription, strategy-based explainable moment ranking, vertical source clipping, complete export packages, original production, durable job state, and a loopback-only creator dashboard. Third-party inputs are recorded as local review drafts without claiming ownership or permission. Automatic publishing, scheduling, and platform analytics are intentionally outside the GTA 6 product scope.
 
+TrendClip has two production paths:
+
+1. **Source clipping** discovers current YouTube videos, analyzes a selected source, recommends three editorial drafts, and renders review-ready vertical variations.
+2. **Original production** turns a reviewed script and scene configuration into an original narrated motion-graphics explainer without third-party footage.
+
+Both paths converge on local FFmpeg encoding, ffprobe validation, a local review package, and manual publishing.
+
 ## Data flow
 
 ```text
@@ -44,6 +51,30 @@ yt-dlp audio + 240p proxy ──► Whisper + motion samples ──► explainab
 isolated OpenCV renderer ──► FFmpeg encode/normalize ──► validation + complete package
 ```
 
+```text
+reviewed research + script + scene configuration
+        │
+        ├──► Edge TTS narration + timing cues
+        ├──► OpenCV motion graphics + original assets
+        └──► mobile-readable captions
+                         │
+                         ▼
+             FFmpeg audio mix + encode
+                         │
+                         ▼
+       validation + thumbnail + contact sheet + metadata
+```
+
+## Runtime modes
+
+| Mode | Entry point | Purpose |
+|---|---|---|
+| Studio UI | `python -m trendclip studio` or platform launcher | Starts the loopback server, refreshes discovery, opens the browser, and provides the complete interactive workflow. |
+| Server only | `python -m trendclip dashboard` | Starts the same local UI/API without opening a browser. |
+| Command line | `doctor`, `discover`, `render`, `produce-original`, `benchmark` | Diagnostics, scripting, deterministic original rendering, and developer workflows. |
+
+The complete selected-source remix workflow is currently UI-led. Version 0.5 does not expose one stable headless command for every source-selection, analysis, draft-review, and variation step.
+
 ## Responsibilities
 
 - `trendclip.config`: parses and validates topic/video configuration; rejects malformed content early.
@@ -66,6 +97,53 @@ isolated OpenCV renderer ──► FFmpeg encode/normalize ──► validation 
 - `trendclip.dashboard`: loopback-only HTTP UI/API for discovery, candidate selection, generation, preview, validation status, manual-upload tracking, and redacted JSONL diagnostics.
 - `trendclip.cli`: validates a staged video, writes a coherent staged metadata set, and promotes all three artifacts with rollback protection; it returns non-zero on any failure.
 - `config/topics`: content, factual citations, visual theme, timings, disclosure, and posting metadata.
+
+## Local storage and diagnostics
+
+```text
+trendclip-studio/
+├── config/                  # Profiles, settings, sources, and topics
+├── dashboard/               # Browser UI
+├── productions/             # Reviewed original-production projects
+├── output/                  # Validated generated packages; ignored by Git
+├── state/
+│   ├── discovery/           # Latest discovery reports
+│   ├── jobs/                # Durable download/transcription/render state
+│   ├── cache/codex/         # Optional structured-task cache
+│   ├── logs/studio.log      # Redacted JSONL operational log
+│   └── media/               # Latest analysis state
+├── tests/
+└── trendclip/
+```
+
+Media jobs use atomic JSON records with a bounded stage history. Native transcription and rendering run in short-lived worker processes so a native-library failure does not terminate the dashboard. Workers are an availability boundary, not a security sandbox. Logs carry operation/job identifiers and never intentionally record browser cookie values.
+
+## Original-production contract
+
+Each project under `productions/<production-id>/` contains a reviewed configuration, script, research references, asset manifest, and local assets. `trendclip.original_production` creates narration, captions, continuous programmatic animation, a thumbnail, contact sheet, publishing metadata, production report, and technical validation. This is a 2D/2.5D template system rather than a general text-to-video model. Edge TTS requires network access; completed narration is cached locally.
+
+## Model and media responsibilities
+
+| Capability | Implementation |
+|---|---|
+| Speech transcription | Faster Whisper, local CPU/INT8 by default |
+| Moment scoring | Deterministic profile-specific audio, speech, replay, motion, and shot-change rules |
+| Optional semantic reranking/copy | Bounded Codex CLI adapter, disabled by default, schema validated, deterministic fallback |
+| Source composition | OpenCV geometry, captions, and visual treatments |
+| Original narration | Edge TTS |
+| Encoding and audio normalization | FFmpeg |
+| Structural and content checks | ffprobe plus black/freeze/silence inspection |
+
+No local general-purpose LLM is required. The current source crop does not perform face, speaker, object, HUD, or action tracking.
+
+## Creator-experience contract
+
+- The normal path emphasizes video choices, preview, and draft comparison rather than formulas or system stages.
+- Best story, High energy, and Quick hit show reasons, confidence, and warnings; raw signals stay secondary.
+- Download, transcription, analysis, rendering, and validation provide progressive status.
+- Completed work is preserved when a later stage fails, and errors provide a plain-language recovery action.
+- Scores are evidence, not “viral probability.” TrendClip never guarantees reach, rights clearance, monetization, or platform acceptance.
+- The interface uses a restrained dark canvas, readable type, one primary action color, accessible focus/contrast, reduced-motion support, and mobile-sized interaction targets.
 
 ## Extension points
 
