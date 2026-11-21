@@ -538,11 +538,134 @@ def _draw_hook(frame, hook: str, *, layout: str = "balanced") -> None:
         cv2.putText(frame, line, ((1080 - size[0]) // 2, top + 72 + index * 78), cv2.FONT_HERSHEY_DUPLEX, 1.65, foreground, 4, cv2.LINE_AA)
 
 
-def _vertical_frame(source_frame, *, layout: str = "balanced"):
+def _persistent_portrait_crop(frames) -> Dict[str, object]:
+    """Detect a stable central portrait region without semantic vision.
+
+    The detector intentionally handles only strong evidence: repeated activity in
+    a 9:16-shaped central band with substantially quieter side columns. Mixed or
+    ambiguous footage falls back to the requested layout rather than jittering a
+    crop from frame to frame.
+    """
+    if not frames:
+        return {"mode": "layout-fallback", "confidence": 0.0, "crop": None, "samples": 0}
     import cv2
+    import numpy as np
+    base_height, base_width = frames[0].shape[:2]
+    if base_height < 2 or base_width < 2:
+        return {"mode": "layout-fallback", "confidence": 0.0, "crop": None, "samples": len(frames)}
+    if base_width / base_height <= .70:
+        return {"mode": "native-portrait", "confidence": 1.0, "crop": [0.0, 0.0, 1.0, 1.0], "samples": len(frames)}
+    crop_width = min(base_width, max(2, int(round(base_height * 9 / 16))))
+    search_margin = max(1, int(base_width * .18))
+    candidates = []
+    contrasts = []
+    for raw in frames:
+        frame = raw if raw.shape[:2] == (base_height, base_width) else cv2.resize(raw, (base_width, base_height))
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        y0, y1 = int(base_height * .08), max(int(base_height * .92), int(base_height * .08) + 2)
+        region = gray[y0:y1].astype(np.float32)
+        spread = np.percentile(region, 90, axis=0) - np.percentile(region, 10, axis=0)
+        deviation = region.std(axis=0)
+        activity = spread * .65 + deviation * .35
+        kernel_width = max(5, base_width // 100)
+        smoothed = np.convolve(activity, np.ones(kernel_width) / kernel_width, mode="same")
+        window = np.convolve(smoothed, np.ones(crop_width), mode="valid")
+        expected_start = (base_width - crop_width) // 2
+        low = max(0, expected_start - search_margin)
+        high = min(len(window), expected_start + search_margin + 1)
+        if high <= low:
+            continue
+        start = low + int(np.argmax(window[low:high]))
+        end = start + crop_width
+        inside = float(smoothed[start:end].mean())
+        outside_values = np.concatenate((smoothed[:start], smoothed[end:]))
+        outside = float(np.median(outside_values)) if len(outside_values) else inside
+        contrast = inside / max(outside, 1.0)
+        center_offset = abs((start + end) / 2 - base_width / 2) / base_width
+        if inside >= 10.0 and contrast >= 1.9 and center_offset <= .16:
+            candidates.append((start + end) / 2)
+            contrasts.append(contrast)
+    sample_count = len(frames)
+    evidence_ratio = len(candidates) / sample_count
+    if len(candidates) < 2 or evidence_ratio < .34:
+        return {
+            "mode": "layout-fallback",
+            "confidence": round(evidence_ratio, 2),
+            "crop": None,
+            "samples": sample_count,
+        }
+    center = float(np.median(candidates))
+    start = int(round(center - crop_width / 2))
+    start = max(0, min(base_width - crop_width, start))
+    contrast_strength = min(1.0, float(np.median(contrasts)) / 3.0)
+    confidence = min(1.0, evidence_ratio * contrast_strength)
+    return {
+        "mode": "embedded-portrait",
+        "confidence": round(confidence, 2),
+        "crop": [round(start / base_width, 5), 0.0, round((start + crop_width) / base_width, 5), 1.0],
+        "samples": sample_count,
+    }
+
+
+def _analyze_framing(source: Path, start: float, duration: float, *, sample_count: int = 9) -> Dict[str, object]:
+    import cv2
+    import numpy as np
+    capture = cv2.VideoCapture(str(source))
+    frames = []
+    try:
+        if duration <= 0:
+            return {"mode": "layout-fallback", "confidence": 0.0, "crop": None, "samples": 0}
+        inset = min(.35, duration * .05)
+        for timestamp in np.linspace(start + inset, max(start + inset, start + duration - inset), max(1, sample_count)):
+            capture.set(cv2.CAP_PROP_POS_MSEC, float(timestamp) * 1000)
+            ok, frame = capture.read()
+            if ok:
+                frames.append(frame)
+    finally:
+        capture.release()
+    return _persistent_portrait_crop(frames)
+
+
+def _crop_frame(source_frame, crop):
+    if not crop:
+        return source_frame
     height, width = source_frame.shape[:2]
-    cover_scale = max(1080 / width, 1920 / height)
-    cover = cv2.resize(source_frame, (int(width * cover_scale) + 2, int(height * cover_scale) + 2))
+    x0 = max(0, min(width - 1, int(round(float(crop[0]) * width))))
+    y0 = max(0, min(height - 1, int(round(float(crop[1]) * height))))
+    x1 = max(x0 + 1, min(width, int(round(float(crop[2]) * width))))
+    y1 = max(y0 + 1, min(height, int(round(float(crop[3]) * height))))
+    return source_frame[y0:y1, x0:x1]
+
+
+def _frame_supports_portrait_crop(source_frame, crop) -> bool:
+    if not crop:
+        return False
+    import cv2
+    import numpy as np
+    height, width = source_frame.shape[:2]
+    x0 = max(0, min(width - 1, int(round(float(crop[0]) * width))))
+    x1 = max(x0 + 1, min(width, int(round(float(crop[2]) * width))))
+    y0, y1 = int(height * .08), max(int(height * .92), int(height * .08) + 2)
+    gray = cv2.cvtColor(source_frame, cv2.COLOR_BGR2GRAY)[y0:y1].astype(np.float32)
+    spread = np.percentile(gray, 90, axis=0) - np.percentile(gray, 10, axis=0)
+    deviation = gray.std(axis=0)
+    activity = spread * .65 + deviation * .35
+    kernel_width = max(5, width // 100)
+    smoothed = np.convolve(activity, np.ones(kernel_width) / kernel_width, mode="same")
+    inside = float(smoothed[x0:x1].mean())
+    outside_values = np.concatenate((smoothed[:x0], smoothed[x1:]))
+    outside = float(np.median(outside_values)) if len(outside_values) else inside
+    return inside >= 10.0 and inside / max(outside, 1.0) >= 1.75
+
+
+def _vertical_frame(source_frame, *, layout: str = "balanced", active_crop=None):
+    import cv2
+    focus_frame = _crop_frame(source_frame, active_crop)
+    height, width = focus_frame.shape[:2]
+    cover_source = focus_frame if active_crop else source_frame
+    cover_height, cover_width = cover_source.shape[:2]
+    cover_scale = max(1080 / cover_width, 1920 / cover_height)
+    cover = cv2.resize(cover_source, (int(cover_width * cover_scale) + 2, int(cover_height * cover_scale) + 2))
     x0 = max(0, (cover.shape[1] - 1080) // 2)
     y0 = max(0, (cover.shape[0] - 1920) // 2)
     background = cover[y0:y0 + 1920, x0:x0 + 1080]
@@ -554,12 +677,13 @@ def _vertical_frame(source_frame, *, layout: str = "balanced"):
     background = cv2.convertScaleAbs(background, alpha=0.70, beta=-10)
     foreground_width = 940 if layout == "clean" else 1080
     foreground_height = max(2, int(height * foreground_width / width))
-    foreground = cv2.resize(source_frame, (foreground_width, foreground_height))
-    if foreground_height > 1500:
-        crop_y = (foreground_height - 1500) // 2
-        foreground = foreground[crop_y:crop_y + 1500]
+    foreground = cv2.resize(focus_frame, (foreground_width, foreground_height))
+    maximum_foreground_height = (1720 if layout == "clean" else 1920) if active_crop else 1500
+    if foreground_height > maximum_foreground_height:
+        crop_y = (foreground_height - maximum_foreground_height) // 2
+        foreground = foreground[crop_y:crop_y + maximum_foreground_height]
         foreground_height = foreground.shape[0]
-    overlay_y = max(210, (1920 - foreground_height) // 2)
+    overlay_y = max(0 if active_crop else 210, (1920 - foreground_height) // 2)
     overlay_y = min(1920 - foreground_height, overlay_y)
     overlay_x = (1080 - foreground_width) // 2
     if layout == "clean":
@@ -568,7 +692,7 @@ def _vertical_frame(source_frame, *, layout: str = "balanced"):
     return background
 
 
-def _render_with_opencv(source: Path, destination: Path, words, candidate, hook: str, *, source_offset: float = 0.0, layout: str = "balanced") -> None:
+def _render_with_opencv(source: Path, destination: Path, words, candidate, hook: str, *, source_offset: float = 0.0, layout: str = "balanced") -> Dict[str, object]:
     try:
         import cv2
     except ImportError as exc:
@@ -578,6 +702,13 @@ def _render_with_opencv(source: Path, destination: Path, words, candidate, hook:
     start, end = float(candidate["start"]), float(candidate["end"])
     duration = end - start
     local_start = max(0.0, start - source_offset)
+    framing = _analyze_framing(source, local_start, duration)
+    active_crop = framing.get("crop") if framing.get("mode") in {"embedded-portrait", "native-portrait"} else None
+    adaptive_crop = framing.get("mode") == "embedded-portrait"
+    crop_enabled = framing.get("mode") == "native-portrait"
+    pending_crop_state = None
+    pending_crop_frames = 0
+    cropped_frame_count = 0
     frame_count = int(math.ceil(duration * 30))
     command = [
         "ffmpeg", "-y", "-v", "error",
@@ -597,7 +728,27 @@ def _render_with_opencv(source: Path, destination: Path, words, candidate, hook:
             ok, source_frame = capture.read()
             if not ok:
                 break
-            frame = _vertical_frame(source_frame, layout=layout)
+            if adaptive_crop:
+                supported = _frame_supports_portrait_crop(source_frame, active_crop)
+                if index == 0:
+                    crop_enabled = supported
+                elif supported == crop_enabled:
+                    pending_crop_state = None
+                    pending_crop_frames = 0
+                else:
+                    if pending_crop_state != supported:
+                        pending_crop_state = supported
+                        pending_crop_frames = 1
+                    else:
+                        pending_crop_frames += 1
+                    if pending_crop_frames >= 6:
+                        crop_enabled = supported
+                        pending_crop_state = None
+                        pending_crop_frames = 0
+            frame_crop = active_crop if crop_enabled else None
+            if frame_crop:
+                cropped_frame_count += 1
+            frame = _vertical_frame(source_frame, layout=layout, active_crop=frame_crop)
             for group in groups:
                 group_start = float(group[0]["s"])
                 group_end = float(group[-1]["e"]) + 0.45
@@ -624,6 +775,9 @@ def _render_with_opencv(source: Path, destination: Path, words, candidate, hook:
     code = process.wait()
     if code != 0:
         raise MediaPipelineError(stderr[-1800:].strip() or "video encoding failed")
+    framing["application"] = "adaptive-with-hysteresis" if adaptive_crop else ("stable" if active_crop else "layout-fallback")
+    framing["applied_frame_ratio"] = round(cropped_frame_count / max(frame_count, 1), 2)
+    return framing
 
 
 def render_candidate_clip(root: Path, job_id: str, pick_number: int, *, topic: str, output_date: str, hook: str = "", draft_kind: str = "best-story", layout: str = "balanced", destinations: Optional[List[str]] = None) -> Dict[str, object]:
@@ -653,7 +807,7 @@ def render_candidate_clip(root: Path, job_id: str, pick_number: int, *, topic: s
         source_offset = _download_render_section(analysis["info"], candidate, source)
     staged = edits / f"clip-{pick_number}-{layout}.mp4"
     update_job(root, job_id, stage="rendering", message=f"Rendering {layout} vertical clip")
-    _render_with_opencv(source, staged, words, candidate, hook, source_offset=source_offset, layout=layout)
+    framing = _render_with_opencv(source, staged, words, candidate, hook, source_offset=source_offset, layout=layout)
     update_job(root, job_id, stage="validating", message="Validating video and export package")
     validation = add_content_quality(
         probe_video(staged, minimum_duration=7.0, maximum_duration=30.0),
@@ -676,7 +830,7 @@ def render_candidate_clip(root: Path, job_id: str, pick_number: int, *, topic: s
         "content_disclosure": "Source footage is third-party material. This local draft requires human review before publication." if third_party_draft else "Source footage was downloaded and transformed after the user confirmed reuse authorization.",
         "source_references": [{"title": info["title"], "url": info["source_url"], "publisher": info["channel"]}],
         "source_clip": {"job_id": job_id, "start": candidate["start"], "end": candidate["end"], "why": candidate["why"]},
-        "draft": {"kind": draft_kind, "layout": layout, "candidate_n": int(pick_number)},
+        "draft": {"kind": draft_kind, "layout": layout, "candidate_n": int(pick_number), "framing": framing},
         "destinations": sorted(selected_destinations),
         "rights_confirmation": rights,
         "video_file": video.name,

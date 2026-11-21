@@ -12,7 +12,7 @@ The pipeline therefore separates three decisions:
 
 ## Default user experience
 
-The recommended default is **Auto-build best Short**. TrendClip produces three drafts:
+The recommended default is **Auto-build best Short**. TrendClip produces up to three qualifying drafts:
 
 - **Top pick** — strongest eligible candidate according to completeness and observed energy; the deterministic scorer does not claim full story understanding.
 - **High energy** — faster action/reaction cut with minimal setup.
@@ -67,6 +67,12 @@ The free baseline remains deterministic and local:
 
 These signals produce candidate beats and explainable component scores. They cannot understand every joke, secret, strategy, or gameplay event.
 
+## Adaptive source framing
+
+Before rendering, TrendClip samples the selected range and looks for repeated activity inside a centered 9:16 region with substantially quieter side columns. Strong evidence produces one stable embedded-portrait crop. During rendering, each frame is checked against that same crop; a short hysteresis window activates or releases it at shot transitions, preventing per-frame crop jitter while preserving intervening landscape inserts. Native portrait sources use a stable full-frame treatment, ordinary landscape sources retain the requested layout, and uncertain cases fall back.
+
+The export records the framing mode, confidence, normalized crop, sample count, application policy, and applied-frame ratio. This is deterministic composition evidence—not face, object, or semantic action tracking.
+
 ## Optional semantic analyzers
 
 An optional local vision/language model, Ollama endpoint, Codex adapter, or other provider can improve:
@@ -103,6 +109,7 @@ The deterministic baseline requires at least 7.5/10 editorial quality, clean ope
 5. Add thumbnail strips, transcript excerpts, surrounding-context preview, and score explanations.
 6. Add manual range adjustment and montage selection.
 7. Add optional semantic analyzer adapters after the deterministic workflow is stable.
+8. Expand active-content evidence only when reviewed examples show a measurable improvement over conservative fallback.
 
 ## Success criterion
 

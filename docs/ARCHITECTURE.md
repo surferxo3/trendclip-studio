@@ -84,7 +84,7 @@ The complete selected-source remix workflow is currently UI-led. Version 0.5 doe
 - `trendclip.validate`: inspects the real file using ffprobe and evaluates platform-oriented technical checks.
 - `trendclip.discovery`: fetches allowlisted HTTPS feeds, normalizes candidates, and ranks only with available evidence. Missing engagement/growth values stay null.
 - `trendclip.candidate`: converts an explicitly selected saved candidate into a constrained original graphical briefing and source-cited metadata. It does not download or reuse the source media.
-- `trendclip.media_pipeline`: records source provenance, downloads with yt-dlp, transcribes with Faster Whisper, ranks moments, renders vertical captions with OpenCV, encodes with FFmpeg, and validates the local review export.
+- `trendclip.media_pipeline`: records source provenance, downloads with yt-dlp, transcribes with Faster Whisper, ranks moments, detects embedded portrait framing, renders adaptive vertical compositions and captions with OpenCV, encodes with FFmpeg, and validates the local review export.
 - `trendclip.profiles`: validates the eleven configuration-driven niche profiles and discovery limits.
 - `trendclip.rights`: records whether a job is a third-party review draft or an explicitly authorized source and validates platform scope.
 - `trendclip.highlight_strategies`: applies format-specific signal weighting, speech-aware boundaries, editorial-quality components, and uncertainty warnings without requiring an LLM.
@@ -129,12 +129,12 @@ Each project under `productions/<production-id>/` contains a reviewed configurat
 | Speech transcription | Faster Whisper, local CPU/INT8 by default |
 | Moment scoring | Deterministic profile-specific audio, speech, replay, motion, and shot-change rules |
 | Optional semantic reranking/copy | Bounded Codex CLI adapter, disabled by default, schema validated, deterministic fallback |
-| Source composition | OpenCV geometry, captions, and visual treatments |
+| Source composition | OpenCV geometry, persistent portrait-region detection, shot-aware adaptive framing with hysteresis, captions, and visual treatments |
 | Original narration | Edge TTS |
 | Encoding and audio normalization | FFmpeg |
 | Structural and content checks | ffprobe plus black/freeze/silence inspection |
 
-No local general-purpose LLM is required. The current source crop does not perform face, speaker, object, HUD, or action tracking.
+No local general-purpose LLM is required. Framing detection uses repeated column-activity evidence, one stable portrait crop, and short hysteresis at shot changes. It records the framing mode, confidence, crop, sample count, application policy, and applied-frame ratio in export metadata. It deliberately falls back when evidence is weak and does not claim face, speaker, object, HUD, or action tracking.
 
 ## Creator-experience contract
 

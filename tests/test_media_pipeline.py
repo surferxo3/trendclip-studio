@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from trendclip.media_pipeline import MediaPipelineError, _download_analysis_audio, _download_analysis_proxy, _download_render_section, _run, _vertical_frame, _yt_dlp, ingest_source, score_moments
+from trendclip.media_pipeline import MediaPipelineError, _download_analysis_audio, _download_analysis_proxy, _download_render_section, _frame_supports_portrait_crop, _persistent_portrait_crop, _run, _vertical_frame, _yt_dlp, ingest_source, score_moments
 
 
 class MediaPipelineTests(unittest.TestCase):
@@ -139,6 +139,44 @@ class MediaPipelineTests(unittest.TestCase):
         self.assertEqual(clean.shape, balanced.shape)
         self.assertGreater(float(np.mean(np.abs(balanced.astype(float) - punch.astype(float)))), 5.0)
         self.assertGreater(float(np.mean(np.abs(balanced.astype(float) - clean.astype(float)))), 1.0)
+
+    def test_persistent_embedded_portrait_is_detected_from_mixed_frames(self):
+        random = np.random.default_rng(42)
+        frames = []
+        for _ in range(5):
+            frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+            frame[:, 438:843] = random.integers(20, 235, size=(720, 405, 3), dtype=np.uint8)
+            frames.append(frame)
+        for _ in range(4):
+            frames.append(random.integers(20, 235, size=(720, 1280, 3), dtype=np.uint8))
+        decision = _persistent_portrait_crop(frames)
+        self.assertEqual(decision["mode"], "embedded-portrait")
+        self.assertGreaterEqual(decision["confidence"], .34)
+        self.assertAlmostEqual(decision["crop"][2] - decision["crop"][0], 405 / 1280, places=2)
+
+    def test_landscape_activity_uses_layout_fallback(self):
+        random = np.random.default_rng(7)
+        frames = [random.integers(20, 235, size=(720, 1280, 3), dtype=np.uint8) for _ in range(7)]
+        decision = _persistent_portrait_crop(frames)
+        self.assertEqual(decision["mode"], "layout-fallback")
+        self.assertIsNone(decision["crop"])
+
+    def test_active_crop_removes_embedded_pillarbox_from_clean_layout(self):
+        random = np.random.default_rng(9)
+        frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+        frame[:, 438:843] = random.integers(80, 235, size=(720, 405, 3), dtype=np.uint8)
+        without_crop = _vertical_frame(frame, layout="clean")
+        with_crop = _vertical_frame(frame, layout="clean", active_crop=[438 / 1280, 0.0, 843 / 1280, 1.0])
+        self.assertGreater(float(with_crop.mean()), float(without_crop.mean()) * 1.5)
+
+    def test_portrait_crop_support_is_frame_specific(self):
+        random = np.random.default_rng(11)
+        crop = [438 / 1280, 0.0, 843 / 1280, 1.0]
+        portrait = np.zeros((720, 1280, 3), dtype=np.uint8)
+        portrait[:, 438:843] = random.integers(40, 235, size=(720, 405, 3), dtype=np.uint8)
+        landscape = random.integers(40, 235, size=(720, 1280, 3), dtype=np.uint8)
+        self.assertTrue(_frame_supports_portrait_crop(portrait, crop))
+        self.assertFalse(_frame_supports_portrait_crop(landscape, crop))
 
     @patch("trendclip.media_pipeline.shutil.which", return_value="/opt/node")
     def test_authenticated_downloader_uses_chrome_and_node_challenge_solver(self, _which):

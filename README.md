@@ -33,7 +33,7 @@ Most automated clipping products are paid, cloud-hosted, opaque, or tied to an A
 | Analyze | Downloads audio plus a lightweight 240p visual proxy; transcribes locally with Faster Whisper and samples replay, speech, loudness, motion, and shot-change evidence. |
 | Select | Scores clean beginnings/endings, hooks, payoff, context, event coherence, replay activity, emphasis, and gaming signals. |
 | Draft | Automatically recommends a **Top pick**, **High energy**, and **Quick hit**—no timestamp selection required in the normal flow. |
-| Render | Downloads only the chosen range at full quality and renders 1080×1920 H.264/AAC with word captions, a hook, and −14 LUFS normalization. |
+| Render | Downloads only the chosen range at full quality, detects persistent embedded portrait footage, and renders 1080×1920 H.264/AAC with adaptive reframing, word captions, a hook, and −14 LUFS normalization. |
 | Vary | Provides distinct **Balanced story**, **Punchy action**, and **Clean focus** treatments and preserves each generated version. |
 | Validate | Checks decoding, container, codecs, dimensions, frame rate, pixel format, duration, black frames, frozen spans, and long silence. |
 | Package | Creates captions, thumbnail, provenance, checksums, and destination-specific metadata for selected platforms. |
