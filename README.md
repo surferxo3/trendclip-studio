@@ -11,11 +11,13 @@
 
 TrendClip Studio is a free, local-first GTA 6 clipping pipeline that discovers current source videos, transcribes them, ranks promising moments, and creates validated vertical captioned drafts for manual review and publishing.
 
+It is a complete local video-processing and editorial pipeline—not an LLM prompt wrapper. Optional AI agents can improve semantic judgment, while discovery, analysis, rendering, and validation continue to work independently.
+
 Version 0.5.0 provides the foundation: current YouTube discovery ranked by observed views/hour, optional logged-in Chrome access with consent, audio plus a low-resolution visual-analysis proxy, Faster Whisper word timestamps, explainable editorial scoring, three automatic draft recommendations, selected-range full-quality download, three distinct vertical treatments, word captions, −14 LUFS normalization, persistent variation exports, export packages, and technical/content validation. Final publishing remains manual.
 
 ## Why TrendClip exists
 
-Most automated clipping products are paid, cloud-hosted, opaque, or tied to an AI subscription. TrendClip takes a different approach:
+Many commercial automated clipping products are paid, cloud-hosted, opaque, or tied to an AI subscription. TrendClip takes a different approach:
 
 - **Free and forkable:** MIT licensed and designed as a reusable developer foundation.
 - **Local-first:** media, transcripts, jobs, logs, and exports remain on your computer.
