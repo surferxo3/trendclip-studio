@@ -93,6 +93,19 @@ class StrategyTests(unittest.TestCase):
         self.assertEqual(picks[0]["quality_components"]["clean_start"], 0.0)
         self.assertIn("may depend on earlier context", picks[0]["warnings"])
 
+    def test_sensitive_language_is_flagged_before_draft_assembly(self):
+        db = np.full(35, -30.0)
+        db[10:13] = -2.0
+        words = [
+            {"w": "Look", "s": 9.0, "e": 9.3},
+            {"w": "at", "s": 9.4, "e": 9.6},
+            {"w": "these", "s": 9.7, "e": 10.0},
+            {"w": "whores.", "s": 10.1, "e": 10.8},
+        ]
+        picks = select_moments("gaming", words, db, [], 35, top=1, minimum=7, maximum=15)
+        self.assertIn("sensitive-language", picks[0]["content_flags"])
+        self.assertIn("requires manual review", " ".join(picks[0]["warnings"]))
+
 
 class JobTests(unittest.TestCase):
     def test_job_history_survives_process_boundaries(self):

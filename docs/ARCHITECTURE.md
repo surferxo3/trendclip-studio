@@ -88,7 +88,7 @@ The complete selected-source remix workflow is currently UI-led. Version 0.5 doe
 - `trendclip.profiles`: validates the eleven configuration-driven niche profiles and discovery limits.
 - `trendclip.rights`: records whether a job is a third-party review draft or an explicitly authorized source and validates platform scope.
 - `trendclip.highlight_strategies`: applies format-specific signal weighting, speech-aware boundaries, editorial-quality components, and uncertainty warnings without requiring an LLM.
-- `trendclip.drafts`: turns ranked evidence into unique Best story, High energy, and Quick hit draft recommendations and assigns balanced, punch, and clean treatments; the recommended draft requires no manual timestamp selection.
+- `trendclip.drafts`: turns ranked evidence into conservative Top pick, High energy, and Quick hit draft recommendations and assigns balanced, punch, and clean treatments; the recommended draft requires no manual timestamp selection.
 - `trendclip.benchmark`: validates two-reviewer benchmark manifests, calculates the documented weighted creator score, and prevents missing platforms or critical failures from being hidden by an aggregate.
 - `trendclip.jobs`: persists atomic job stages and history.
 - `trendclip.export_package`: creates captions, thumbnail, provenance, platform drafts, and checksummed manifests.
@@ -139,7 +139,7 @@ No local general-purpose LLM is required. The current source crop does not perfo
 ## Creator-experience contract
 
 - The normal path emphasizes video choices, preview, and draft comparison rather than formulas or system stages.
-- Best story, High energy, and Quick hit show reasons, confidence, and warnings; raw signals stay secondary.
+- Top pick, High energy, and Quick hit show reasons, confidence, and warnings; raw signals stay secondary.
 - Download, transcription, analysis, rendering, and validation provide progressive status.
 - Completed work is preserved when a later stage fails, and errors provide a plain-language recovery action.
 - Scores are evidence, not “viral probability.” TrendClip never guarantees reach, rights clearance, monetization, or platform acceptance.

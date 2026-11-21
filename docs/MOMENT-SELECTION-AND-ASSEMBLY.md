@@ -14,7 +14,7 @@ The pipeline therefore separates three decisions:
 
 The recommended default is **Auto-build best Short**. TrendClip produces three drafts:
 
-- **Best story** — strongest coherent hook-to-payoff sequence.
+- **Top pick** — strongest eligible candidate according to completeness and observed energy; the deterministic scorer does not claim full story understanding.
 - **High energy** — faster action/reaction cut with minimal setup.
 - **Quick hit** — shortest self-contained moment suitable for a meme or rapid highlight.
 
@@ -92,7 +92,7 @@ An automatically assembled draft is rejected or downgraded when:
 - The result contains long dead air, frozen visuals, or an abrupt audio discontinuity.
 - The Short cannot be understood without watching substantial omitted context.
 
-The deterministic baseline requires at least 6.0/10 editorial quality, clean opening and ending boundaries, and evidence of a hook, payoff, or relevant content event. If no candidate passes, Studio reports that no strong complete moment was found and does not label the least-weak candidate as “Best story.”
+The deterministic baseline requires at least 7.5/10 editorial quality, clean opening and ending boundaries, evidence of a hook, payoff, or relevant content event, and no detected sensitive-language flag. If no candidate passes, Studio reports that no strong complete moment was found and does not promote the least-weak candidate as the Top pick. These checks are deliberately conservative and remain a pre-review aid—not semantic proof that a clip will go viral.
 
 ## Implementation sequence
 

@@ -7,7 +7,7 @@ class DraftAssemblyTests(unittest.TestCase):
     def setUp(self):
         self.candidates = [
             {"n": 1, "quality_score": 9.0, "score": 3.0, "duration": 28, "score_components": {"loudness": .2, "heat": .1}},
-            {"n": 2, "quality_score": 7.0, "score": 4.0, "duration": 24, "score_components": {"loudness": .9, "heat": .8, "motion": .7}},
+            {"n": 2, "quality_score": 7.6, "score": 4.0, "duration": 24, "score_components": {"loudness": .9, "heat": .8, "motion": .7}},
             {"n": 3, "quality_score": 8.0, "score": 2.0, "duration": 15, "score_components": {"loudness": .3}},
             {"n": 4, "quality_score": 5.0, "score": 1.0, "duration": 18, "score_components": {}},
         ]
@@ -19,6 +19,35 @@ class DraftAssemblyTests(unittest.TestCase):
         self.assertEqual(len({item["candidate_n"] for item in drafts}), 3)
         self.assertEqual([item["layout"] for item in drafts], ["balanced", "punch", "clean"])
         self.assertTrue(drafts[0]["recommended"])
+        self.assertEqual(drafts[0]["label"], "Top pick")
+
+    def test_hook_only_candidate_is_not_review_ready(self):
+        candidate = {
+            "n": 1,
+            "quality_score": 6.2,
+            "score": 3.0,
+            "quality_components": {"clean_start": 1.0, "clean_end": 1.0, "hook": 1.0, "payoff": 0.0, "gaming_event": 0.0},
+        }
+        self.assertEqual(assemble_drafts([candidate]), [])
+        self.assertIn("below 7.5", " ".join(editorial_issues(candidate)))
+
+    def test_sensitive_language_candidate_requires_manual_review(self):
+        candidate = {
+            "n": 1,
+            "quality_score": 10.0,
+            "score": 4.0,
+            "content_flags": ["sensitive-language"],
+            "quality_components": {"clean_start": 1.0, "clean_end": 1.0, "hook": 1.0, "payoff": 1.0, "gaming_event": 1.0},
+        }
+        self.assertEqual(assemble_drafts([candidate]), [])
+        self.assertIn("manual review", " ".join(editorial_issues(candidate)))
+
+    def test_top_pick_uses_energy_to_break_equal_quality_ties(self):
+        candidates = [
+            {"n": 1, "quality_score": 7.6, "score": 5.0, "duration": 20, "score_components": {"loudness": .1}},
+            {"n": 2, "quality_score": 7.6, "score": 4.0, "duration": 20, "score_components": {"loudness": .8, "motion": .5}},
+        ]
+        self.assertEqual(assemble_drafts(candidates)[0]["candidate_n"], 2)
 
     def test_semantic_preference_controls_recommended_draft(self):
         drafts = assemble_drafts(self.candidates, preferred_n=3)

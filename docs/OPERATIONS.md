@@ -26,7 +26,7 @@ Stop a terminal-run server with `Ctrl+C`. Publishing is always manual in this re
 2. Optionally refine the GTA 6 search query.
 3. Leave **Chrome YouTube session** off unless the selected source specifically requires the signed-in browser session.
 4. Analyze the selected source as a third-party local review draft. TrendClip downloads audio plus a small visual proxy and prepares up to three draft recommendations.
-5. If no candidate passes the editorial quality gate, choose another source instead of forcing a weak clip. Otherwise create the recommended balanced Best story draft, or optionally choose punchy High energy or clean Quick hit. Only that video range is downloaded at full quality for rendering, and each created variation remains available.
+5. If no candidate passes the editorial quality gate, choose another source instead of forcing a weak clip. Otherwise create the recommended balanced Top pick draft, or optionally choose punchy High energy or clean Quick hit. Only that video range is downloaded at full quality for rendering, and each created variation remains available.
 6. Download the package and upload manually if you decide it is appropriate.
 
 The browser-session switch controls access only. It does not establish ownership or publication rights.

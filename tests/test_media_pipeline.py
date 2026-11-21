@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from trendclip.media_pipeline import MediaPipelineError, _download_analysis_proxy, _download_render_section, _run, _vertical_frame, _yt_dlp, ingest_source, score_moments
+from trendclip.media_pipeline import MediaPipelineError, _download_analysis_audio, _download_analysis_proxy, _download_render_section, _run, _vertical_frame, _yt_dlp, ingest_source, score_moments
 
 
 class MediaPipelineTests(unittest.TestCase):
@@ -41,6 +41,28 @@ class MediaPipelineTests(unittest.TestCase):
             self.assertFalse((job / "source.mp4").exists())
         self.assertEqual(info["analysis_mode"], "audio-first-fallback")
         self.assertEqual(info["video_download"], "deferred-until-draft-selection")
+        self.assertFalse(download_audio.call_args.kwargs["section_limited"])
+        self.assertFalse(_download_proxy.call_args.kwargs["section_limited"])
+
+    @patch("trendclip.media_pipeline._run")
+    def test_full_source_download_avoids_realtime_section_cut(self, run):
+        with tempfile.TemporaryDirectory() as directory:
+            job = Path(directory)
+
+            def execute(command, **_kwargs):
+                (job / "analysis-audio.webm").write_bytes(b"audio")
+                return CompletedProcess(command, 0, "", "")
+
+            run.side_effect = execute
+            result = _download_analysis_audio(
+                ["yt-dlp"],
+                "https://www.youtube.com/watch?v=demo",
+                job,
+                120,
+                section_limited=False,
+            )
+        self.assertIsNotNone(result)
+        self.assertNotIn("--download-sections", run.call_args.args[0])
 
     @patch("trendclip.media_pipeline._run")
     def test_visual_proxy_uses_low_resolution_video_only(self, run):
@@ -139,6 +161,14 @@ class MediaPipelineTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(MediaPipelineError, "current Chrome session"):
             _run(["yt-dlp", "--cookies-from-browser", "chrome", "https://www.youtube.com/watch?v=demo"])
+
+    @patch("trendclip.media_pipeline.subprocess.run")
+    def test_expired_media_link_has_actionable_retry_message(self, run):
+        run.return_value = CompletedProcess(
+            ["yt-dlp"], 1, "", "[https] HTTP error 403 Forbidden: Server returned 403 Forbidden"
+        )
+        with self.assertRaisesRegex(MediaPipelineError, "temporary media link"):
+            _run(["yt-dlp", "https://www.youtube.com/watch?v=demo"])
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ Most automated clipping products are paid, cloud-hosted, opaque, or tied to an A
 | Access | Uses anonymous yt-dlp access by default, with an optional per-job Chrome-session switch when YouTube requires sign-in. |
 | Analyze | Downloads audio plus a lightweight 240p visual proxy; transcribes locally with Faster Whisper and samples replay, speech, loudness, motion, and shot-change evidence. |
 | Select | Scores clean beginnings/endings, hooks, payoff, context, event coherence, replay activity, emphasis, and gaming signals. |
-| Draft | Automatically recommends **Best story**, **High energy**, and **Quick hit**—no timestamp selection required in the normal flow. |
+| Draft | Automatically recommends a **Top pick**, **High energy**, and **Quick hit**—no timestamp selection required in the normal flow. |
 | Render | Downloads only the chosen range at full quality and renders 1080×1920 H.264/AAC with word captions, a hook, and −14 LUFS normalization. |
 | Vary | Provides distinct **Balanced story**, **Punchy action**, and **Clean focus** treatments and preserves each generated version. |
 | Validate | Checks decoding, container, codecs, dimensions, frame rate, pixel format, duration, black frames, frozen spans, and long silence. |
@@ -59,7 +59,7 @@ Audio + 240p visual proxy
 Explainable candidate beats
           │
           ▼
-Best story · High energy · Quick hit
+Top pick · High energy · Quick hit
           │
           ▼
 Selected range downloaded at full quality
@@ -166,7 +166,7 @@ python -m trendclip benchmark --manifest benchmarks/my-reviewed-samples.json
 
 Run commands with the `.venv` interpreter shown above, or activate the environment first and use `python`.
 
-Studio starts at [http://127.0.0.1:8765](http://127.0.0.1:8765). Choose a discovered source and analyze it. TrendClip prepares Best story, High energy, and Quick hit drafts and selects Best story automatically; choosing another draft is optional. Analysis downloads audio and a small visual proxy for motion/shot signals, while only the chosen range is downloaded at full quality for rendering. The first analysis downloads the Whisper `small` speech model; later runs reuse the local cache. The server binds only to the local loopback interface and stops with `Ctrl+C`.
+Studio starts at [http://127.0.0.1:8765](http://127.0.0.1:8765). Choose a discovered source and analyze it. TrendClip prepares Top pick, High energy, and Quick hit drafts and selects Top pick automatically; choosing another draft is optional. Analysis downloads audio and a small visual proxy for motion/shot signals, while only the chosen range is downloaded at full quality for rendering. When the full source is within the analysis limit, Studio downloads it directly instead of forcing a slower real-time section cut. The first analysis downloads the Whisper `small` speech model; later runs reuse the local cache. The server binds only to the local loopback interface and stops with `Ctrl+C`.
 
 ### First-run workflow
 
@@ -174,7 +174,7 @@ Studio starts at [http://127.0.0.1:8765](http://127.0.0.1:8765). Choose a discov
 2. Select a source. You normally do not paste a URL.
 3. Leave **Chrome YouTube session** off unless Studio says that source requires sign-in.
 4. Choose **Download and find the best moments**.
-5. Review the three explained drafts. Best story is selected automatically.
+5. Review the explained drafts. Top pick is selected automatically; weak or sensitive candidates are withheld instead of padding the list to three.
 6. Edit the opening hook if desired.
 7. Select YouTube, Facebook, and/or TikTok for publishing metadata.
 8. Create the recommended or selected draft.
@@ -277,7 +277,7 @@ The implementation avoids shell-built FFmpeg strings and uses `pathlib`, Python 
 | `trendclip.discovery` | YouTube/feed discovery, normalized evidence, freshness and views-per-hour ordering. |
 | `trendclip.media_pipeline` | yt-dlp ingestion, audio/proxy preparation, Whisper transcription, OpenCV rendering, and FFmpeg encoding. |
 | `trendclip.highlight_strategies` | Explainable signal weights, boundaries, completeness, quality components, and warnings. |
-| `trendclip.drafts` | Best story, High energy, Quick hit, and their visual treatments. |
+| `trendclip.drafts` | Conservative Top pick, High energy, Quick hit recommendations, and their visual treatments. |
 | `trendclip.validate` | ffprobe structure plus black, freeze, and silence detection. |
 | `trendclip.export_package` | Captions, thumbnail, provenance, destination metadata, and checksummed manifests. |
 | `trendclip.jobs` | Durable atomic job stages, history, cancellation, and retry state. |

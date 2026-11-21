@@ -27,7 +27,7 @@ from .rights import validate_rights
 ALLOWED_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
 HYPE = re.compile(r"\b(no way|oh my god|omg|what|wait|bro|let'?s go|holy|insane|crazy|yo+|wtf|dude|look at)\b", re.I)
 SLURS = re.compile(r"\b(nigg\w*|n[i1]gg?a\w*|f[a@]gg?\w*|retard\w*|tranny\w*|chink\w*|spic\w*|kike\w*)\b", re.I)
-SWEARS = re.compile(r"\b(fuck\w*|motherfuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|pussy\w*|asshole\w*)\b", re.I)
+SWEARS = re.compile(r"\b(fuck\w*|motherfuck\w*|shit\w*|bitch\w*|cunt\w*|dick\w*|pussy\w*|asshole\w*|whore\w*)\b", re.I)
 RENDER_LAYOUTS = {"balanced", "punch", "clean"}
 
 
@@ -70,6 +70,10 @@ def _run(command: List[str], *, timeout: int = 900) -> subprocess.CompletedProce
             raise MediaPipelineError(
                 "YouTube did not provide a downloadable video format for this source. Try again after updating Studio, or choose another source."
             )
+        if "HTTP error 403" in message or "Server returned 403" in message:
+            raise MediaPipelineError(
+                "YouTube denied a temporary media link. Retry the source once; if it continues, enable the Chrome YouTube session or choose another source."
+            )
         raise MediaPipelineError(message)
     return completed
 
@@ -95,11 +99,18 @@ def _yt_dlp(*, use_browser_cookies: bool = False) -> List[str]:
     return command
 
 
-def _download_analysis_audio(ytdlp: List[str], url: str, job: Path, limit_seconds: float) -> Path:
+def _download_analysis_audio(
+    ytdlp: List[str],
+    url: str,
+    job: Path,
+    limit_seconds: float,
+    *,
+    section_limited: bool = True,
+) -> Path:
     """Download only audio for the full-source analysis pass."""
     template = job / "analysis-audio.%(ext)s"
     command = ytdlp + ["-f", "ba/b", "-o", str(template)]
-    if limit_seconds > 0:
+    if section_limited and limit_seconds > 0:
         command += ["--download-sections", f"*0-{limit_seconds:.3f}"]
     _run(command + [url], timeout=1800)
     downloaded = next(
@@ -111,11 +122,18 @@ def _download_analysis_audio(ytdlp: List[str], url: str, job: Path, limit_second
     return downloaded
 
 
-def _download_analysis_proxy(ytdlp: List[str], url: str, job: Path, limit_seconds: float) -> Optional[Path]:
+def _download_analysis_proxy(
+    ytdlp: List[str],
+    url: str,
+    job: Path,
+    limit_seconds: float,
+    *,
+    section_limited: bool = True,
+) -> Optional[Path]:
     """Best-effort low-resolution video used only for motion/shot signals."""
     template = job / "analysis-proxy.%(ext)s"
     command = ytdlp + ["-f", "bv*[height<=240]/wv*", "-o", str(template)]
-    if limit_seconds > 0:
+    if section_limited and limit_seconds > 0:
         command += ["--download-sections", f"*0-{limit_seconds:.3f}"]
     try:
         _run(command + [url], timeout=1800)
@@ -195,14 +213,27 @@ def ingest_source(
     if raw.get("is_live"):
         raise MediaPipelineError("live recording uses a separate workflow and is not enabled in Studio yet")
     analysis_duration = min(duration, max_minutes * 60)
-    downloaded_audio = _download_analysis_audio(ytdlp, url, job, analysis_duration)
+    section_limited = analysis_duration + .01 < duration
+    downloaded_audio = _download_analysis_audio(
+        ytdlp,
+        url,
+        job,
+        analysis_duration,
+        section_limited=section_limited,
+    )
     _extract_audio(downloaded_audio, audio)
     if downloaded_audio != audio:
         downloaded_audio.unlink(missing_ok=True)
     if not audio.is_file() or audio.stat().st_size == 0:
         raise MediaPipelineError("the analysis audio could not be prepared")
     update_job(root, job_id, stage="analyzing", message="Preparing a small visual proxy for motion and shot signals")
-    analysis_proxy = _download_analysis_proxy(ytdlp, url, job, analysis_duration)
+    analysis_proxy = _download_analysis_proxy(
+        ytdlp,
+        url,
+        job,
+        analysis_duration,
+        section_limited=section_limited,
+    )
     info = {
         "job_id": job_id,
         "title": raw.get("title") or "Untitled source",

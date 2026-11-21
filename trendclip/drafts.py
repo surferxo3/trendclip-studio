@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Iterable
 
 
-MIN_DRAFT_QUALITY = 6.0
+MIN_DRAFT_QUALITY = 7.5
 
 
 def _component(candidate: dict[str, Any], name: str) -> float:
@@ -39,6 +39,8 @@ def editorial_issues(candidate: dict[str, Any]) -> list[str]:
             issues.append("ending or payoff is uncertain")
         if not any(float(components.get(name, 0) or 0) for name in ("hook", "payoff", "gaming_event")):
             issues.append("no clear hook, payoff, or gaming event was detected")
+    if "sensitive-language" in candidate.get("content_flags", []):
+        issues.append("sensitive language requires manual review")
     return issues
 
 
@@ -111,8 +113,8 @@ def assemble_drafts(candidates: Iterable[dict[str, Any]], *, preferred_n: int | 
         })
 
     preferred = by_n.get(int(preferred_n)) if preferred_n is not None else None
-    best_story = preferred or max(values, key=lambda item: (_quality(item), float(item.get("score", 0))))
-    add("best-story", "Best story", "balanced", best_story, _story_reason(best_story))
+    best_story = preferred or max(values, key=lambda item: (_quality(item), _energy(item), float(item.get("score", 0))))
+    add("best-story", "Top pick", "balanced", best_story, _story_reason(best_story))
 
     energy_pool = [item for item in values if int(item["n"]) not in used]
     high_energy = max(energy_pool, key=lambda item: (_energy(item), _quality(item)), default=None)

@@ -10,8 +10,18 @@ ENERGY_WORDS = re.compile(r"\b(no way|wow|wait|look|incredible|important|why|how
 PUNCH_WORDS = re.compile(r"\b(but|until|except|turns out|plot twist|actually)\b", re.I)
 HOOK_WORDS = re.compile(r"\b(no way|wait|look|watch|what if|did you|how|why|secret|imagine|this is)\b", re.I)
 PAYOFF_WORDS = re.compile(r"\b(finally|there it is|got it|made it|won|lost|died|failed|escaped|revealed|turns out|that's why|that is why)\b", re.I)
-GAMING_EVENTS = re.compile(r"\b(win|won|fail|failed|died|kill|boss|mission|chase|escape|police|wanted|car|crash|glitch|secret|reveal|weapon|explosion|npc)\w*\b", re.I)
-CONTEXT_OPENERS = re.compile(r"^(and|but|so|then|because|also|he|she|they|it|that|this|these|those|which|who)\b", re.I)
+GAMING_EVENTS = re.compile(
+    r"\b(win|won|fail|failed|died|kill|boss|mission|chase|escape|police|wanted|car|crash|glitch|secret|reveal|weapon|gun|jet|plane|aircraft|helicopter|vehicle|takeoff|afterburner|explosion|npc)\w*\b",
+    re.I,
+)
+CONTEXT_OPENERS = re.compile(
+    r"^(and|but|so|then|because|also|if|other|otherwise|either|meanwhile|previously|he|she|they|it|that|this|these|those|which|who)\b",
+    re.I,
+)
+SENSITIVE_LANGUAGE = re.compile(
+    r"\b(nigg\w*|n[i1]gg?a\w*|f[a@]gg?\w*|retard\w*|tranny\w*|chink\w*|spic\w*|kike\w*|whore\w*)\b",
+    re.I,
+)
 
 
 def _normalized(values):
@@ -168,9 +178,13 @@ def select_moments(strategy: str, words, db, heatmap, duration: float, *, visual
         if quality["gaming_event"]:
             why.append("gaming event language")
         warnings = []
+        content_flags = []
         if not quality["clean_start"]:
             warnings.append("may depend on earlier context")
         if not quality["clean_end"]:
             warnings.append("payoff or sentence ending is uncertain")
-        picks.append({"n": len(picks) + 1, "start": round(start, 2), "end": round(end, 2), "duration": round(end-start, 2), "score": round(ranking_score, 3), "quality_score": round(quality_score, 1), "strategy": strategy, "score_components": components, "quality_components": quality, "why": why[:5] or ["speech continuity"], "warnings": warnings, "text": _text(segment_words)[:500]})
+        if SENSITIVE_LANGUAGE.search(_text(segment_words)):
+            content_flags.append("sensitive-language")
+            warnings.append("contains sensitive language and requires manual review")
+        picks.append({"n": len(picks) + 1, "start": round(start, 2), "end": round(end, 2), "duration": round(end-start, 2), "score": round(ranking_score, 3), "quality_score": round(quality_score, 1), "strategy": strategy, "score_components": components, "quality_components": quality, "content_flags": content_flags, "why": why[:5] or ["speech continuity"], "warnings": warnings, "text": _text(segment_words)[:500]})
     return sorted(picks, key=lambda item: item["score"], reverse=True)

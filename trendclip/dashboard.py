@@ -36,6 +36,24 @@ LOG_LOCK = threading.Lock()
 WORKERS_LOCK = threading.Lock()
 WORKER_LIMIT = threading.BoundedSemaphore(2)
 ACTIVE_WORKERS: Dict[str, subprocess.Popen] = {}
+ACTIVE_JOB_IDS: set[str] = set()
+
+
+def _claim_job(job_id: str) -> None:
+    if not job_id:
+        return
+    with WORKERS_LOCK:
+        if job_id in ACTIVE_JOB_IDS:
+            raise MediaPipelineError("This source is already processing. Wait for it to finish or cancel the active job.")
+        ACTIVE_JOB_IDS.add(job_id)
+
+
+def _release_job(job_id: str) -> None:
+    if not job_id:
+        return
+    with WORKERS_LOCK:
+        ACTIVE_JOB_IDS.discard(job_id)
+        ACTIVE_WORKERS.pop(job_id, None)
 
 
 def _worker_process_options(platform_name: str = os.name) -> Dict[str, object]:
@@ -90,6 +108,7 @@ def _run_media_worker(root: Path, arguments, timeout: int = 3600):
         job_id = str(arguments[arguments.index("--job-id") + 1])
     correlation = f"operation_id={operation_id} job_id={job_id or 'none'} action={operation}"
     _log_event(root, "media-worker-start", correlation)
+    _claim_job(job_id)
     try:
         with WORKER_LIMIT:
             process = subprocess.Popen(
@@ -110,11 +129,10 @@ def _run_media_worker(root: Path, arguments, timeout: int = 3600):
                 process.communicate()
                 raise
             finally:
-                if job_id:
-                    with WORKERS_LOCK:
-                        ACTIVE_WORKERS.pop(job_id, None)
+                _release_job(job_id)
         returncode = process.returncode
     except (OSError, subprocess.TimeoutExpired) as exc:
+        _release_job(job_id)
         _log_event(root, "media-worker-error", f"{correlation} {exc}", "error")
         raise MediaPipelineError(f"media worker could not complete: {exc}") from exc
     if returncode != 0:

@@ -4,10 +4,21 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from trendclip.dashboard import _save_discovery_safely, _terminate_worker, _worker_process_options, codex_smoke_test, project_status, serve_dashboard
+from trendclip.dashboard import ACTIVE_JOB_IDS, _claim_job, _release_job, _save_discovery_safely, _terminate_worker, _worker_process_options, codex_smoke_test, project_status, serve_dashboard
+from trendclip.media_pipeline import MediaPipelineError
 
 
 class DashboardTests(unittest.TestCase):
+    def test_duplicate_media_job_is_rejected_until_release(self):
+        job_id = "abc123abc123"
+        try:
+            _claim_job(job_id)
+            with self.assertRaisesRegex(MediaPipelineError, "already processing"):
+                _claim_job(job_id)
+        finally:
+            _release_job(job_id)
+        self.assertNotIn(job_id, ACTIVE_JOB_IDS)
+
     def test_worker_process_options_are_cross_platform(self):
         self.assertEqual(_worker_process_options("posix"), {"start_new_session": True})
         windows = _worker_process_options("nt")
