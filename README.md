@@ -78,6 +78,16 @@ Local review package for manual upload
 
 TrendClip runs on Windows, macOS, and Linux in a private project-local Python environment. It does not require Codex, Claude, an API key, or an LLM account.
 
+### Choose how to run it
+
+| Experience | How to start | Best for |
+|---|---|---|
+| **Studio UI — recommended** | Double-click the platform launcher, or run `python -m trendclip studio` | The complete discover, analyze, review, render, validate, and download workflow |
+| **Server only** | Run `python -m trendclip dashboard`, then open the shown local URL yourself | Users who do not want TrendClip to launch a browser automatically |
+| **Command line** | Run `doctor`, `discover`, `render`, `produce-original`, or `benchmark` commands | Diagnostics, scripting, original productions, and developer extensions |
+
+The complete source-video remix workflow is currently designed around the local Studio UI. The command line exposes its major foundations, but v0.5 does not yet provide one stable headless command that performs every interactive source-selection and draft-review step.
+
 ### System prerequisites
 
 Install these once before running TrendClip Setup:
@@ -97,6 +107,8 @@ FFmpeg performs media processing. Node.js enables reliable YouTube challenge han
 - Linux: run `./setup-trendclip.sh`.
 
 Setup creates `.venv`, installs all Python packages there, and runs the system doctor. It does not silently install operating-system software or request administrator access. The Whisper speech model downloads automatically on the first analysis and is then cached locally.
+
+On Windows, the `.bat` file is the friendly double-click entry point. It calls the PowerShell setup script, which contains the actual dependency checks and installation logic. Users do not need to prefer PowerShell or understand it; PowerShell is used internally because it provides more reliable error handling than a large CMD script.
 
 ### Start Studio
 
@@ -275,20 +287,12 @@ The implementation avoids shell-built FFmpeg strings and uses `pathlib`, Python 
 
 See [Architecture](docs/ARCHITECTURE.md) and [Product Architecture](docs/PRODUCT-ARCHITECTURE.md) for diagrams and detailed data flow.
 
-## Cardboard, MCP editors, and other tools
-
-[Cardboard](https://www.cardboard.ai/mcp) demonstrates a strong conversational editing experience: timeline operations, captions, reframing, moment extraction, previews, and exports through ChatGPT and Claude tools. TrendClip takes inspiration from its plain-language actions, persistent projects, visible progress, and editable results—but does not depend on Cardboard.
-
-Cardboard’s MCP workflow requires a Cardboard account, uses Cardboard plan credits, and performs editing in its cloud. Its local agent-connected desktop workflow is currently specific to Apple-silicon Macs. TrendClip’s promise is different: a free, independently runnable, local-first core for Windows, macOS, and Linux. A community extension may export TrendClip drafts into Cardboard or another editor, but that integration must remain optional.
-
-See [Competitive Review](docs/COMPETITIVE-REVIEW.md) for the GTA 6 clippers, local-model tools, and agent-driven editing projects reviewed during development.
-
 ## Testing and the 10/10 target
 
 The current recorded local evidence includes:
 
 - 67 passing unit/integration tests;
-- Python compilation, JavaScript syntax, POSIX shell, and zsh checks, with a PowerShell parser check defined for Windows CI;
+- Python compilation, JavaScript syntax, POSIX shell, zsh, and Windows PowerShell parser checks;
 - a passing dependency doctor and `pip check`;
 - loopback dashboard/API checks;
 - desktop and 390×844 responsive visual inspection;
