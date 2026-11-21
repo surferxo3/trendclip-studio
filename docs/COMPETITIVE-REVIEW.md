@@ -62,7 +62,7 @@ Cardboard's official MCP and platform documentation was reviewed directly. Its r
 
 ## Recommended order
 
-1. Publish the repository and record the six-job hosted CI matrix.
+1. Keep the published repository's six-job Windows/macOS/Linux CI matrix green.
 2. Run the authorized two-reviewer benchmark and preserve the evidence manifest.
 3. Add preview trimming and manual montage controls.
 4. Add facecam/gameplay-aware reframing without requiring an LLM.

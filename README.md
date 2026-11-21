@@ -3,6 +3,7 @@
 > Turn current GTA 6 videos into explainable, review-ready vertical clip drafts—locally, for free, without requiring an LLM or cloud account.
 
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+[![Cross-platform tests](https://github.com/surferxo3/trendclip-studio/actions/workflows/tests.yml/badge.svg)](https://github.com/surferxo3/trendclip-studio/actions/workflows/tests.yml)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-5FD6C8)
 ![License](https://img.shields.io/badge/license-MIT-F5C451)
 ![Publishing](https://img.shields.io/badge/publishing-manual%20only-98A2B3)
@@ -237,7 +238,7 @@ Read [Security](docs/SECURITY.md) for the complete threat boundary.
 
 ## Automation boundary
 
-The Studio can discover and rank recent YouTube candidates, ingest a selected source as a local review job, transcribe it, combine replay/audio/speech/motion evidence, recommend three editorial drafts, render three visibly different vertical styles, preserve generated variations, validate content and structure, and preview/download the export. Cross-platform launchers and CI exist; hosted CI evidence, real-hardware release smoke tests, authorized human benchmark media, and facecam-aware subject tracking remain release-quality gaps. Automatic posting, scheduling, and analytics are deliberately out of scope. See [Product Scope](docs/PRODUCT-SCOPE.md), [Quality Benchmark](docs/QUALITY-BENCHMARK.md), and [Reference Capability Gap](docs/REFERENCE-GAP.md).
+The Studio can discover and rank recent YouTube candidates, ingest a selected source as a local review job, transcribe it, combine replay/audio/speech/motion evidence, recommend three editorial drafts, render three visibly different vertical styles, preserve generated variations, validate content and structure, and preview/download the export. The six-job Windows/macOS/Linux hosted CI matrix passes; real-hardware Windows/Linux release smoke tests, authorized human benchmark media, and facecam-aware subject tracking remain release-quality gaps. Automatic posting, scheduling, and analytics are deliberately out of scope. See [Product Scope](docs/PRODUCT-SCOPE.md), [Quality Benchmark](docs/QUALITY-BENCHMARK.md), and [Reference Capability Gap](docs/REFERENCE-GAP.md).
 
 Run the evidence-based quality score after completing a local benchmark manifest:
 
@@ -252,10 +253,10 @@ The command returns a non-zero result when targets, platform evidence, or critic
 | Platform | Setup/start launcher | Automated CI definition | Executed in this release workspace |
 |---|---:|---:|---:|
 | macOS | Yes | Python 3.10 and 3.12 | Yes |
-| Windows | Yes, Batch + PowerShell | Python 3.10 and 3.12 | Not yet—requires hosted CI or Windows hardware |
-| Linux | Yes, POSIX shell | Python 3.10 and 3.12 | Not yet—requires hosted CI or Linux hardware |
+| Windows | Yes, Batch + PowerShell | Python 3.10 and 3.12 | Hosted CI passed; real-hardware smoke pending |
+| Linux | Yes, POSIX shell | Python 3.10 and 3.12 | Hosted CI passed; real-hardware smoke pending |
 
-The implementation avoids shell-built FFmpeg strings and uses `pathlib`, Python subprocess argument lists, standard JSON, OpenCV, and FFmpeg APIs. GitHub Actions is configured for all six OS/Python combinations. Windows and Linux are **supported by design and CI configuration**, but this project will not label them fully verified until those hosted jobs run successfully after publication.
+The implementation avoids shell-built FFmpeg strings and uses `pathlib`, Python subprocess argument lists, standard JSON, OpenCV, and FFmpeg APIs. GitHub Actions passed all six OS/Python combinations on November 21, 2026. This proves installation, unit tests, compilation, browser JavaScript syntax, and launcher parsing in hosted Windows, macOS, and Linux environments; real-hardware media-pipeline smoke tests remain a separate release check.
 
 ## Architecture at a glance
 
