@@ -42,13 +42,13 @@ class RenderTests(unittest.TestCase):
                 {"generated_at": "2026-11-19T00:00:00+00:00", "sha256": "abc"},
                 {"valid": True},
             )
-            payload = json.loads(path.read_text())
+            payload = json.loads(path.read_text(encoding="utf-8"))
         self.assertEqual(payload["project_name"], "TrendClip Studio")
         self.assertEqual(payload["validation_status"], "passed")
         self.assertIn("not gameplay", payload["content_disclosure"].lower())
 
     def test_non_gaming_disclosure_is_config_driven(self):
-        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text())
+        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"))
         raw["slug"] = "ai-news"
         raw["topic_name"] = "AI News"
         raw["metadata"]["content_disclosure"] = "Original graphical technology briefing."
@@ -64,7 +64,7 @@ class RenderTests(unittest.TestCase):
                 {"generated_at": "2026-11-19T00:00:00+00:00", "sha256": "abc"},
                 {"valid": True, "sha256": "abc"},
             )
-            payload = json.loads(output.read_text())
+            payload = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual(payload["content_disclosure"], "Original graphical technology briefing.")
 
     @patch("trendclip.cli.shutil.which", return_value="/usr/bin/tool")
@@ -80,7 +80,7 @@ class RenderTests(unittest.TestCase):
             config_dir = project / "config" / "topics"
             config_dir.mkdir(parents=True)
             (config_dir / "gta6.json").write_text(
-                (ROOT / "config" / "topics" / "gta6.json").read_text(), encoding="utf-8"
+                (ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"), encoding="utf-8"
             )
             output = project / "output"
             def fake_render(config, path):
@@ -113,7 +113,7 @@ class RenderTests(unittest.TestCase):
             config_dir = project / "config" / "topics"
             config_dir.mkdir(parents=True)
             (config_dir / "gta6.json").write_text(
-                (ROOT / "config" / "topics" / "gta6.json").read_text(), encoding="utf-8"
+                (ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"), encoding="utf-8"
             )
             destination = project / "output" / "gta6" / "2026-11-19"
             destination.mkdir(parents=True)

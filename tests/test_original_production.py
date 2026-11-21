@@ -15,11 +15,15 @@ class OriginalProductionTests(unittest.TestCase):
             cues = parse_vtt(vtt)
             write_srt(cues, root / "captions.srt")
             self.assertEqual(cues[0]["text"], "Hello world")
-            self.assertIn("00:00:01,000 --> 00:00:02,500", (root / "captions.srt").read_text())
+            self.assertIn("00:00:01,000 --> 00:00:02,500", (root / "captions.srt").read_text(encoding="utf-8"))
 
     def test_experiment_scene_weights_are_complete(self):
         root = Path(__file__).resolve().parent.parent
-        config = json.loads((root / "productions" / "experiment-001-agentic-commerce" / "production.json").read_text())
+        config = json.loads(
+            (root / "productions" / "experiment-001-agentic-commerce" / "production.json").read_text(
+                encoding="utf-8"
+            )
+        )
         self.assertEqual(len(config["scenes"]), 8)
         self.assertAlmostEqual(sum(scene["weight"] for scene in config["scenes"]), 1.0)
         self.assertEqual(config["title"], "Can AI Spend Your Money Without You Knowing?")

@@ -32,7 +32,7 @@ class ConfigTests(unittest.TestCase):
                 validate_date(value)
 
     def test_rejects_wrong_dimensions(self):
-        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text())
+        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"))
         raw["video"]["size"] = [1920, 1080]
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bad.json"
@@ -41,7 +41,7 @@ class ConfigTests(unittest.TestCase):
                 load_topic(path)
 
     def test_rejects_unsupported_glyph_and_insecure_source(self):
-        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text())
+        raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"))
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bad.json"
             raw["scenes"][0]["body"] = "UNSUPPORTED EMOJI 😊"
@@ -49,7 +49,7 @@ class ConfigTests(unittest.TestCase):
             with self.assertRaisesRegex(ConfigError, "unsupported glyphs"):
                 load_topic(path)
 
-            raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text())
+            raw = json.loads((ROOT / "config" / "topics" / "gta6.json").read_text(encoding="utf-8"))
             raw["metadata"]["source_references"][0]["url"] = "http://example.com"
             path.write_text(json.dumps(raw), encoding="utf-8")
             with self.assertRaisesRegex(ConfigError, "HTTPS"):
