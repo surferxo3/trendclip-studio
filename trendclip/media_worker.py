@@ -8,7 +8,7 @@ from pathlib import Path
 
 from .media_pipeline import MediaPipelineError, analyze_source, ingest_source, render_candidate_clip
 from .codex_adapter import CodexAdapterError, invoke
-from .drafts import assemble_drafts
+from .drafts import editorial_summary
 
 
 def _settings(root: Path):
@@ -32,7 +32,7 @@ def _optional_semantic_rerank(root: Path, result: dict) -> dict:
             raise CodexAdapterError("Codex ranking did not contain each candidate exactly once")
         order = {value: index for index, value in enumerate(response["ranked_candidate_ids"])}
         result["candidates"] = sorted(result["candidates"], key=lambda item: order.get(str(item["n"]), len(order)))
-        result["drafts"] = assemble_drafts(result["candidates"], preferred_n=int(result["candidates"][0]["n"]))
+        result.update(editorial_summary(result["candidates"], preferred_n=int(result["candidates"][0]["n"])))
         result["codex_assistance"] = {"used": True, "task": "semantic-highlight-rerank", "rationale": response["rationale"]}
     except CodexAdapterError as exc:
         result["codex_assistance"] = {"used": False, "reason": str(exc), "fallback": "deterministic-ranking"}

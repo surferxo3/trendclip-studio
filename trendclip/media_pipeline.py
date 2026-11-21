@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 from .config import validate_date, validate_slug
 from .validate import add_content_quality, inspect_media_quality, probe_video, write_validation
 from .highlight_strategies import select_moments
-from .drafts import assemble_drafts
+from .drafts import editorial_summary
 from .jobs import update_job
 from .rights import validate_rights
 
@@ -397,11 +397,12 @@ def analyze_source(root: Path, job_id: str, *, model_name: str = "small", strate
     candidates = select_moments(strategy, words, db, info.get("heatmap"), media_duration, visual_signals=visual_signals, minimum=minimum, maximum=maximum)
     if not candidates:
         fallback_duration = min(30.0, media_duration)
-        candidates = [{"n": 1, "start": 0.0, "end": fallback_duration, "duration": fallback_duration, "score": 0.0, "why": ["opening segment fallback"], "text": " ".join(str(word["w"]) for word in words[:80])}]
-    result = {"job_id": job_id, "info": info, "strategy": strategy, "candidates": candidates, "drafts": assemble_drafts(candidates), "signals": {"words": len(words), "heatmap": bool(info.get("heatmap")), "loudness": True, "visual_change_samples": len(visual_signals), "analysis_mode": info.get("analysis_mode", "full-video-legacy")}}
+        candidates = [{"n": 1, "start": 0.0, "end": fallback_duration, "duration": fallback_duration, "score": 0.0, "quality_score": 0.0, "score_components": {}, "quality_components": {"clean_start": 0.0, "clean_end": 0.0, "hook": 0.0, "payoff": 0.0, "gaming_event": 0.0}, "why": ["opening segment fallback"], "warnings": ["no meaningful signal peak was found"], "text": " ".join(str(word["w"]) for word in words[:80])}]
+    editorial = editorial_summary(candidates)
+    result = {"job_id": job_id, "info": info, "strategy": strategy, "candidates": candidates, **editorial, "signals": {"words": len(words), "heatmap": bool(info.get("heatmap")), "loudness": True, "visual_change_samples": len(visual_signals), "analysis_mode": info.get("analysis_mode", "full-video-legacy")}}
     _write_json(job / "analysis.json", result)
     _write_json(root / "state" / "media" / "latest.json", result)
-    update_job(root, job_id, stage="ready", message=f"{len(candidates)} candidate moments ready")
+    update_job(root, job_id, stage="ready", message=str(editorial["editorial_message"]))
     return result
 
 

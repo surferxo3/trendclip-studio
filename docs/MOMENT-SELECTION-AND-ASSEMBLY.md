@@ -92,6 +92,8 @@ An automatically assembled draft is rejected or downgraded when:
 - The result contains long dead air, frozen visuals, or an abrupt audio discontinuity.
 - The Short cannot be understood without watching substantial omitted context.
 
+The deterministic baseline requires at least 6.0/10 editorial quality, clean opening and ending boundaries, and evidence of a hook, payoff, or relevant content event. If no candidate passes, Studio reports that no strong complete moment was found and does not label the least-weak candidate as “Best story.”
+
 ## Implementation sequence
 
 1. Segment transcripts at sentence/pause boundaries and video at shot changes.
@@ -104,4 +106,4 @@ An automatically assembled draft is rejected or downgraded when:
 
 ## Success criterion
 
-A user should be able to choose one of three understandable assembled drafts without reading raw timestamps. If they open the evidence panel, they should be able to explain what TrendClip detected, why the beats belong together, and which uncertainty remains.
+A user should be able to choose from up to three understandable assembled drafts without reading raw timestamps—or receive an honest no-suitable-moment result. If they open the evidence panel, they should be able to explain what TrendClip detected, why the beats belong together, and which uncertainty remains.

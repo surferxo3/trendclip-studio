@@ -1,6 +1,6 @@
 import unittest
 
-from trendclip.drafts import assemble_drafts
+from trendclip.drafts import assemble_drafts, editorial_issues, editorial_summary
 
 
 class DraftAssemblyTests(unittest.TestCase):
@@ -27,6 +27,30 @@ class DraftAssemblyTests(unittest.TestCase):
 
     def test_empty_input_has_no_placeholder_drafts(self):
         self.assertEqual(assemble_drafts([]), [])
+
+    def test_weak_candidate_is_not_presented_as_best_story(self):
+        weak = {
+            "n": 1,
+            "quality_score": 4.4,
+            "score": 1.126,
+            "quality_components": {"clean_start": 1.0, "clean_end": 1.0, "hook": 0.0, "payoff": 0.0, "gaming_event": 0.0},
+        }
+        self.assertEqual(assemble_drafts([weak]), [])
+        self.assertIn("no clear hook", " ".join(editorial_issues(weak)))
+        summary = editorial_summary([weak])
+        self.assertEqual(summary["editorial_status"], "no-suitable-moment")
+        self.assertIn("Try another source", summary["editorial_message"])
+
+    def test_story_reason_matches_available_evidence(self):
+        hooked = {
+            "n": 1,
+            "quality_score": 7.6,
+            "score": 2.0,
+            "quality_components": {"clean_start": 1.0, "clean_end": 1.0, "hook": 1.0, "payoff": 0.0, "gaming_event": 1.0},
+        }
+        draft = assemble_drafts([hooked])[0]
+        self.assertIn("hook and gaming event", draft["reason"])
+        self.assertNotIn("hook-to-payoff", draft["reason"])
 
 
 if __name__ == "__main__":

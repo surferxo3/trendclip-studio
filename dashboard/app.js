@@ -86,17 +86,32 @@ function renderMoments(analysis) {
     const candidate = analysis.candidates.find((item) => item.n === draft.candidate_n);
     return candidate ? { draft, candidate } : null;
   }).filter(Boolean);
-  const rows = presented.length ? presented : analysis.candidates.slice(0, 3).map((candidate, index) => ({ draft: { label: index === 0 ? "Best story" : "Alternative", reason: "Ranked candidate", recommended: index === 0 }, candidate }));
-  if (!rows.some((item) => item.candidate.n === state.selectedMoment?.n)) {
-    state.selectedMoment = rows[0]?.candidate || null;
-  }
-  state.selectedDraft = rows.find((item) => item.candidate.n === state.selectedMoment?.n)?.draft || rows[0]?.draft || null;
+  const rows = presented;
   const list = $("#moment-list");
   list.replaceChildren();
   const semanticNote = $("#semantic-note");
   const assistance = analysis.codex_assistance || {};
   semanticNote.hidden = !assistance.used;
   semanticNote.textContent = assistance.used ? `Codex-assisted ordering: ${assistance.rationale}` : "";
+  if (!rows.length) {
+    state.selectedMoment = null;
+    state.selectedDraft = null;
+    const empty = document.createElement("div");
+    empty.className = "selection-empty";
+    empty.textContent = analysis.editorial_message || "No strong complete moment was found. Try another source.";
+    list.append(empty);
+    const renderButton = $("#render-source-button");
+    renderButton.disabled = true;
+    renderButton.textContent = "Choose another video";
+    $("#moment-section").hidden = false;
+    $("#step-analyze").className = "workflow-step done";
+    $("#step-create").className = "workflow-step";
+    return;
+  }
+  if (!rows.some((item) => item.candidate.n === state.selectedMoment?.n)) {
+    state.selectedMoment = rows[0]?.candidate || null;
+  }
+  state.selectedDraft = rows.find((item) => item.candidate.n === state.selectedMoment?.n)?.draft || rows[0]?.draft || null;
   for (const entry of rows) {
     const moment = entry.candidate;
     const label = document.createElement("label");
@@ -125,6 +140,7 @@ function renderMoments(analysis) {
     list.append(label);
   }
   const selectedDraft = rows.find((item) => item.candidate.n === state.selectedMoment?.n)?.draft;
+  $("#render-source-button").disabled = false;
   $("#render-source-button").textContent = selectedDraft?.recommended ? "Create recommended draft" : "Create selected draft";
   $("#moment-section").hidden = false;
   $("#step-analyze").className = "workflow-step done";
@@ -379,8 +395,13 @@ $("#analyze-button").addEventListener("click", async (event) => {
     });
     state.status = result.status;
     renderMoments(result.analysis);
-    $("#analysis-progress").textContent = `${result.analysis.drafts?.length || 0} ready drafts assembled from ${result.analysis.candidates.length} candidate moments using transcription, loudness${result.analysis.signals.heatmap ? ", and replay data" : ""}.`;
-    showToast("Analysis complete—the recommended draft is ready to create");
+    if (result.analysis.editorial_status === "no-suitable-moment") {
+      $("#analysis-progress").textContent = result.analysis.editorial_message;
+      showToast("Analysis complete—try another source for a stronger moment");
+    } else {
+      $("#analysis-progress").textContent = `${result.analysis.drafts?.length || 0} ready drafts assembled from ${result.analysis.candidates.length} candidate moments using transcription, loudness${result.analysis.signals.heatmap ? ", and replay data" : ""}.`;
+      showToast("Analysis complete—the recommended draft is ready to create");
+    }
   } catch (error) {
     showToast(error.message, true);
     $("#analysis-progress").textContent = "Analysis failed. Review the message and try another source.";
